@@ -1,25 +1,38 @@
-import unittest
+import unittest, csv
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from Madison_main_page import MainPageMadison
 from Madison_Log_in import MadisonLogInPage
 from Madison_create_account import MadisonCreateAccount
+from ddt import ddt, data, unpack
 
-
+def get_data(file_name):
+    rows = []
+    data_file = open(file_name, 'r')
+    reader = csv.reader(data_file)
+    next(reader, None)
+    
+    for row in reader:
+        rows.append(row)
+    return rows
     
     
+@ddt
 class MadisonTest(unittest.TestCase):
     
     @classmethod
     def setUpClass(cls):
         cls.driver = webdriver.Chrome()
-    
-    def test_a_search_mainpage(self):
+        
+    @data(*get_data('pom_Madison/database_madison.csv'))
+    @unpack
+    def test_a_search_mainpage(self, product, amount):
         madison = MainPageMadison(self.driver)
         madison.open()
-        madison.search('tee')
+        madison.search(product)
+        print(f'the product {product} has {amount} amount')
         
-        self.assertEqual('tee', madison.keyword)
+        self.assertEqual(product, madison.keyword)
     
     def test_b_change_language(self):
         madison = MainPageMadison(self.driver)
